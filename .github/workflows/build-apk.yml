@@ -33,10 +33,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.14.6'
 
       - name: Build APK with monotonically increasing versionCode
         shell: bash
+        # Gradle 8.14.x is the latest maintained 8.x line supported by this
+        # project's Kotlin 2.2 and Android Gradle Plugin 8.7 toolchain.
+        # Skip only setup-gradle's build-result capture: it emits an unavoidable
+        # "out of date" notice for all Gradle 8.x versions. Building, caching,
+        # signing, artifact uploads and non-zero error handling stay enabled.
+        env:
+          GRADLE_ACTIONS_SKIP_BUILD_RESULT_CAPTURE: 'true'
         run: |
           gradle --no-daemon :app:assembleRelease \
             "-PversionCode=${GITHUB_RUN_NUMBER}" \
