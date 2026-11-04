@@ -109,8 +109,10 @@ class MainActivity : Activity() {
                 javaScriptEnabled = true
                 loadsImagesAutomatically = true
                 cacheMode = WebSettings.LOAD_NO_CACHE
-                setSupportZoom(true)
-                builtInZoomControls = true
+                // Zoom and panning are bounded by the GIF edges in local HTML.
+                // Native page zoom permits scrolling into the black document area.
+                setSupportZoom(false)
+                builtInZoomControls = false
                 displayZoomControls = false
                 useWideViewPort = true
                 loadWithOverviewMode = true
@@ -180,30 +182,129 @@ class MainActivity : Activity() {
             <head>
               <meta charset="utf-8">
               <meta name="viewport" content="width=device-width, initial-scale=1,
-                minimum-scale=0.25, maximum-scale=8.0, user-scalable=yes">
+                maximum-scale=1, user-scalable=no">
               <style>
-                html, body { margin: 0; padding: 0; min-height: 100%; background: #000; }
-                img { display: none; width: 100%; height: auto; max-width: none; }
+                html, body { margin: 0; padding: 0; width: 100%; height: 100%;
+                             overflow: hidden; background: #000; touch-action: none; }
+                #stage { position: fixed; inset: 0; overflow: hidden; touch-action: none; }
+                #radar { display: none; width: 100%; height: auto; max-width: none;
+                         transform-origin: 0 0; touch-action: none;
+                         user-select: none; -webkit-user-drag: none; }
                 #placeholder { padding: 48px 20px; color: #ddd; text-align: center;
                                font: 15px sans-serif; }
               </style>
             </head>
             <body>
-              <div id="placeholder">Загрузка метеорадара…</div>
-              <img id="radar" alt="Анимированный метеорадар">
+              <div id="stage">
+                <div id="placeholder">Загрузка метеорадара…</div>
+                <img id="radar" alt="Анимированный метеорадар" draggable="false">
+              </div>
               <script>
-                window.showRadar = function(revision) {
+                (function() {
+                  var stage = document.getElementById('stage');
                   var img = document.getElementById('radar');
-                  img.onload = function() {
-                    img.style.display = 'block';
-                    document.getElementById('placeholder').style.display = 'none';
+                  var placeholder = document.getElementById('placeholder');
+                  var zoom = 1, x = 0, y = 0, gesture = null;
+                  var MAX_ZOOM = 8;
+
+                  function constrain() {
+                    if (img.style.display === 'none') return;
+                    var iw = img.offsetWidth * zoom;
+                    var ih = img.offsetHeight * zoom;
+                    var vw = stage.clientWidth;
+                    var vh = stage.clientHeight;
+
+                    // No black margins may enter the screen on a zoomed axis.
+                    x = iw <= vw ? 0 : Math.max(vw - iw, Math.min(0, x));
+                    // A square GIF is shorter than a portrait screen at 1x.
+                    // Anchor it to the top until enlarged enough to fill height.
+                    y = ih <= vh ? 0 : Math.max(vh - ih, Math.min(0, y));
+                  }
+
+                  function paint() {
+                    constrain();
+                    img.style.transform = 'translate3d(' + x + 'px,' + y +
+                                          'px,0) scale(' + zoom + ')';
+                  }
+
+                  function midpoint(a, b) {
+                    var r = stage.getBoundingClientRect();
+                    return { x: (a.clientX + b.clientX) / 2 - r.left,
+                             y: (a.clientY + b.clientY) / 2 - r.top };
+                  }
+
+                  function start(touches) {
+                    if (!img.naturalWidth) return;
+                    if (touches.length >= 2) {
+                      var a = touches[0], b = touches[1];
+                      var mid = midpoint(a, b);
+                      gesture = {
+                        kind: 'pinch', scale: zoom,
+                        distance: Math.max(1, Math.hypot(
+                          a.clientX - b.clientX, a.clientY - b.clientY)),
+                        sourceX: (mid.x - x) / zoom,
+                        sourceY: (mid.y - y) / zoom
+                      };
+                    } else if (touches.length === 1) {
+                      gesture = {
+                        kind: 'pan', touchX: touches[0].clientX,
+                        touchY: touches[0].clientY, x: x, y: y
+                      };
+                    } else {
+                      gesture = null;
+                    }
+                  }
+
+                  function touchMove(event) {
+                    event.preventDefault();
+                    if (!gesture || !img.naturalWidth) return;
+                    if (event.touches.length >= 2 && gesture.kind === 'pinch') {
+                      var a = event.touches[0], b = event.touches[1];
+                      var mid = midpoint(a, b);
+                      var distance = Math.hypot(a.clientX - b.clientX,
+                                                a.clientY - b.clientY);
+                      zoom = Math.max(1, Math.min(MAX_ZOOM,
+                          gesture.scale * distance / gesture.distance));
+                      x = mid.x - gesture.sourceX * zoom;
+                      y = mid.y - gesture.sourceY * zoom;
+                      paint();
+                    } else if (event.touches.length === 1 &&
+                               gesture.kind === 'pan') {
+                      x = gesture.x + event.touches[0].clientX - gesture.touchX;
+                      y = gesture.y + event.touches[0].clientY - gesture.touchY;
+                      paint();
+                    }
+                  }
+
+                  stage.addEventListener('touchstart', function(event) {
+                    event.preventDefault();
+                    start(event.touches);
+                  }, {passive: false});
+                  stage.addEventListener('touchmove', touchMove, {passive: false});
+                  stage.addEventListener('touchend', function(event) {
+                    event.preventDefault();
+                    start(event.touches);
+                  }, {passive: false});
+                  stage.addEventListener('touchcancel', function(event) {
+                    event.preventDefault();
+                    start(event.touches);
+                  }, {passive: false});
+                  window.addEventListener('resize', paint);
+
+                  window.showRadar = function(revision) {
+                    img.onload = function() {
+                      img.style.display = 'block';
+                      placeholder.style.display = 'none';
+                      // A fresh GIF does not reset pan and pinch scale.
+                      paint();
+                    };
+                    img.onerror = function() {
+                      placeholder.textContent =
+                        'Не удалось прочитать сохранённое изображение';
+                    };
+                    img.src = '/radar.gif?v=' + revision;
                   };
-                  img.onerror = function() {
-                    document.getElementById('placeholder').textContent =
-                      'Не удалось прочитать сохранённое изображение';
-                  };
-                  img.src = '/radar.gif?v=' + revision;
-                };
+                })();
               </script>
             </body>
             </html>
