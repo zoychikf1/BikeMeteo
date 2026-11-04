@@ -1,0 +1,101 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Split weather sky -->
+    <path android:fillColor="#5279B7"
+        android:pathData="M0,0H54V108H0Z" />
+    <path android:fillColor="#2EA8FF"
+        android:pathData="M54,0H108V108H54Z" />
+
+    <!-- Mountains and landscape -->
+    <path android:fillColor="#3F669D"
+        android:pathData="M0,62 C16,55 26,58 36,52 C42,48 48,48 54,51 L54,108 H0Z" />
+    <path android:fillColor="#5B9443"
+        android:pathData="M54,68 C66,63 78,66 90,58 C96,54 101,54 108,56 V108 H54Z" />
+    <path android:fillColor="#4C87C8"
+        android:pathData="M56,73 C65,70 74,73 84,67 C90,63 97,63 108,66 V79 C95,78 89,82 80,83 C72,84 64,82 56,86Z" />
+
+    <!-- Rain cloud -->
+    <path android:fillColor="#D9E3F7"
+        android:pathData="M14,18 C17,12 24,10 30,14 C33,8 42,8 46,14 C51,13 57,17 58,23 C60,30 54,35 47,35 H17 C10,35 6,28 9,22 C10,20 12,19 14,18Z" />
+    <path android:fillColor="#B8C8E8"
+        android:pathData="M17,22 C19,18 23,17 27,19 C30,15 36,14 40,18 C43,16 49,18 50,23 C52,28 48,31 42,31 H21 C16,31 13,27 15,23 C15,23 16,22 17,22Z" />
+
+    <!-- Rain -->
+    <path android:strokeColor="#C3EEFF"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:pathData="M16,38 L13,46 M24,37 L21,49 M33,39 L29,51 M42,38 L37,54 M50,40 L46,51 M20,49 L16,60 M30,51 L26,63 M40,52 L36,65 M49,52 L45,62" />
+
+    <!-- Sun -->
+    <path android:fillColor="#FFE352"
+        android:pathData="M78,14a10,10 0,1 1,0 20a10,10 0,1 1,0 -20z" />
+    <path android:strokeColor="#FFD300"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M78,4 L78,9 M78,39 L78,34 M63,24 L68,24 M88,24 L93,24 M67,13 L70,16 M86,32 L89,35 M89,13 L86,16 M70,32 L67,35" />
+
+    <!-- Road -->
+    <path android:fillColor="#6C7380"
+        android:pathData="M0,84 C13,78 24,75 33,78 C43,81 52,90 61,92 C72,94 84,91 108,82 V97 C88,101 74,102 61,100 C44,97 31,88 22,87 C15,86 10,88 0,92Z" />
+    <path android:strokeColor="#D9DCE1"
+        android:strokeWidth="1.6"
+        android:pathData="M10,88 C21,82 30,82 39,86" />
+
+    <!-- Motorcycle wheels -->
+    <path android:fillColor="#20252E"
+        android:pathData="M28,70a8,8 0,1 1,0 16a8,8 0,1 1,0 -16z" />
+    <path android:fillColor="#20252E"
+        android:pathData="M74,68a10,10 0,1 1,0 20a10,10 0,1 1,0 -20z" />
+    <path android:fillColor="#A6ABB4"
+        android:pathData="M28,74a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z" />
+    <path android:fillColor="#A6ABB4"
+        android:pathData="M74,73a5,5 0,1 1,0 10a5,5 0,1 1,0 -10z" />
+
+    <!-- Motorcycle chassis -->
+    <path android:fillColor="#111419"
+        android:pathData="M23,65 H32 L39,61 H49 L57,56 H69 L77,61 L81,69 H72 L65,66 H56 L49,70 H37 L31,73 H24Z" />
+
+    <!-- Red touring fairing -->
+    <path android:fillColor="#F3342F"
+        android:pathData="M34,61 H49 L56,57 H67 L72,60 L68,65 H58 L52,69 H39 L33,67Z" />
+    <path android:fillColor="#F3342F"
+        android:pathData="M20,63 H31 L35,67 H24Z" />
+
+    <!-- Touring luggage -->
+    <path android:fillColor="#3A404C"
+        android:pathData="M17,58 H30 C32,58 34,60 34,62 V67 H16 V60 C16,59 16,58 17,58Z" />
+    <path android:fillColor="#3A404C"
+        android:pathData="M10,66 H25 C26,66 27,67 27,68 V76 H8 V68 C8,67 9,66 10,66Z" />
+    <path android:fillColor="#3A404C"
+        android:pathData="M30,54 H42 C44,54 45,55 46,57 L48,61 H31 L29,57 C28,55 29,54 30,54Z" />
+
+    <!-- Windscreen -->
+    <path android:fillColor="#D9EEF8"
+        android:pathData="M58,46 L67,45 L75,58 H65Z" />
+    <path android:fillColor="#FFFFFF"
+        android:fillAlpha="0.35"
+        android:pathData="M60,48 L66,47 L71,57 H66Z" />
+
+    <!-- Motorcycle details -->
+    <path android:fillColor="#151A22"
+        android:pathData="M64,59 L72,59 L75,67 H69Z" />
+    <path android:fillColor="#D9DDE3"
+        android:pathData="M47,70 L53,70 L51,79 H44Z" />
+    <path android:fillColor="#E8EAED"
+        android:pathData="M60,61 H67 L64,66 H57Z" />
+    <path android:strokeColor="#171B22"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M50,70 L42,79 M50,70 L59,69 M59,69 L66,77 M34,69 L42,79 M66,77 L74,77" />
+    <path android:strokeColor="#111419"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M69,56 L76,53 M58,55 L54,50" />
+    <path android:fillColor="#B5C7FF"
+        android:pathData="M67,61 H72 L71,64 H65Z" />
+</vector>
