@@ -1,0 +1,25 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'io.github.zoychikf1.bikemeteo'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'io.github.zoychikf1.bikemeteo'
+        minSdk 23
+        targetSdk 34
+        versionCode providers.gradleProperty('versionCode').orElse('1').get().toInteger()
+        versionName providers.gradleProperty('versionName').orElse('0.1.0').get()
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}

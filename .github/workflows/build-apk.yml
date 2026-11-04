@@ -1,0 +1,93 @@
+name: Build signed BikeMeteo APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -n "$SDKMANAGER"
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Check persistent release signing
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+        run: |
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" || -z "$ANDROID_SIGNING_PASSWORD" ]]; then
+            echo "::error::Configure ANDROID_KEYSTORE_BASE64 and ANDROID_SIGNING_PASSWORD in repository Actions secrets. Never sign installable updates with an ephemeral key."
+            exit 1
+          fi
+
+      - name: Build APK with monotonically increasing versionCode
+        shell: bash
+        run: |
+          gradle --no-daemon :app:assembleRelease \
+            "-PversionCode=${GITHUB_RUN_NUMBER}" \
+            "-PversionName=0.1.${GITHUB_RUN_NUMBER}"
+
+      - name: Align and sign release APK
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ vars.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          KEYSTORE="$RUNNER_TEMP/bikemeteo-release.p12"
+          ALIGNED="$RUNNER_TEMP/bikemeteo-aligned.apk"
+          ALIAS="${ANDROID_KEY_ALIAS:-nmea_bridge}"
+          mkdir -p output
+          SIGNED="output/BikeMeteo-v0.1.${GITHUB_RUN_NUMBER}-signed.apk"
+
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+          chmod 600 "$KEYSTORE"
+
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk "$ALIGNED"
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-type PKCS12 \
+            --ks-key-alias "$ALIAS" \
+            --ks-pass env:ANDROID_SIGNING_PASSWORD \
+            --key-pass env:ANDROID_SIGNING_PASSWORD \
+            --out "$SIGNED" "$ALIGNED"
+
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            --verbose --print-certs "$SIGNED"
+          rm -f "$KEYSTORE" "$ALIGNED"
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BikeMeteo-v0.1.${{ github.run_number }}-signed
+          path: output/BikeMeteo-v0.1.${{ github.run_number }}-signed.apk
+          if-no-files-found: error
