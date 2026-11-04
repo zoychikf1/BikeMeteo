@@ -69,7 +69,7 @@ class MainActivity : Activity() {
         val root = FrameLayout(this)
         webView = WebView(this).apply {
             setBackgroundColor(Color.BLACK)
-            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLL
+            overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
             isHorizontalScrollBarEnabled = true
             isVerticalScrollBarEnabled = true
             webViewClient = object : WebViewClient() {
