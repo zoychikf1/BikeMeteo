@@ -35,6 +35,13 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Build APK with monotonically increasing versionCode
+        shell: bash
+        run: |
+          gradle --no-daemon :app:assembleRelease \
+            "-PversionCode=${GITHUB_RUN_NUMBER}" \
+            "-PversionName=0.1.${GITHUB_RUN_NUMBER}"
+
       - name: Check persistent release signing
         shell: bash
         env:
@@ -45,13 +52,6 @@ jobs:
             echo "::error::Configure ANDROID_KEYSTORE_BASE64 and ANDROID_SIGNING_PASSWORD in repository Actions secrets. Never sign installable updates with an ephemeral key."
             exit 1
           fi
-
-      - name: Build APK with monotonically increasing versionCode
-        shell: bash
-        run: |
-          gradle --no-daemon :app:assembleRelease \
-            "-PversionCode=${GITHUB_RUN_NUMBER}" \
-            "-PversionName=0.1.${GITHUB_RUN_NUMBER}"
 
       - name: Align and sign release APK
         shell: bash
